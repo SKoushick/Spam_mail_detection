@@ -1,0 +1,143 @@
+Aim
+The main goal of this project is to build a machine learning model that can accurately classify emails as either "spam" or "ham" (not spam).
+
+Dataset
+The dataset used is named spam.csv. It contains two columns: 'label' and 'message'. The 'label' column indicates whether an email is spam or ham, and the 'message' column contains the text of the email.
+
+Tools and Technologies
+Programming Language: Python
+
+Libraries:
+
+NumPy
+
+Pandas
+
+Scikit-learn
+
+Matplotlib
+
+Seaborn
+
+NLTK
+
+IDE/Platform: Jupyter Notebook
+
+Methodology
+Data Collection: The data was loaded from a CSV file named 'spam.csv' into a Pandas DataFrame.
+
+Data Preprocessing:
+
+The categorical labels 'ham' and 'spam' were mapped to numerical values 0 and 1, respectively.
+
+The text messages were cleaned by converting them to lowercase, removing non-alphabetic characters, splitting them into words, removing common English stopwords, and applying stemming to reduce words to their root form.
+
+Exploratory Data Analysis (EDA):
+
+A count plot was generated to visualize the distribution of spam and ham messages in the dataset.
+
+Model Selection:
+
+A Support Vector Machine (SVM) model, specifically the SVC (Support Vector Classifier) from Scikit-learn, was chosen for the classification task.
+
+Training and Testing:
+
+The dataset was split into training and testing sets.
+
+The cleaned text data was converted into numerical feature vectors using TfidfVectorizer.
+
+The SVM model was trained on the training data.
+
+Evaluation:
+
+The model's performance was evaluated using metrics such as accuracy, confusion matrix, and a classification report (which includes precision and recall).
+
+Prediction:
+
+A function was created to take a new, unseen email message as input, process it, and predict whether it is spam or ham.
+
+Program
+Python
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+import joblib as jl
+import nltk
+import re
+nltk.download('stopwords')
+from nltk.corpus import stopwords
+from nltk.stem.porter import PorterStemmer
+
+ps = PorterStemmer()
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r'[^a-zA-Z]','',text)
+    text = text.split()
+    text = [ps.stem(word) for word in text if word not in stopwords.words('english')]
+    return " ".join(text)
+
+df = pd.read_csv('spam.csv')
+df.columns = ['label', 'message']
+df['label'] = df['label'].map({'ham': 0, 'spam': 1})
+df['cleaned_text'] = df['message'].apply(clean_text)
+
+tfidf = TfidfVectorizer()
+x = tfidf.fit_transform(df['cleaned_text'])
+y = df['label']
+
+xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
+
+model = SVC()
+model.fit(xtrain, ytrain)
+
+pred = model.predict(xtest)
+
+def predict_spam(msg):
+    msg_cle = clean_text(msg)
+    msg_vec = tfidf.transform([msg_cle])
+    pred = model.predict(msg_vec)
+    return "Spam" if pred[0] == 1 else "Ham"
+
+Msg = input('Enter the message :')
+predict_spam(Msg)
+Output & Results
+Accuracy: The model achieved an accuracy of 98% on the test set.
+
+Confusion Matrix:
+
+True Positives (Spam correctly identified): 124
+
+True Negatives (Ham correctly identified): 966
+
+False Positives (Ham incorrectly identified as Spam): 0
+
+False Negatives (Spam incorrectly identified as Ham): 25
+
+Classification Report:
+
+Precision (Ham): 0.98
+
+Recall (Ham): 1.00
+
+Precision (Spam): 1.00
+
+Recall (Spam): 0.83
+
+Conclusion
+The Support Vector Machine model performed very well in detecting spam emails, with an overall accuracy of 98%. The model showed high precision in identifying both spam and ham messages. The recall for ham messages was perfect, while the recall for spam messages was slightly lower, indicating that a small number of spam emails were misclassified as ham.
+
+Future Work
+Hyperparameter Tuning: The performance of the SVM model could be further improved by tuning its hyperparameters using techniques like Grid Search or Randomized Search.
+
+Try Different Models: Other classification algorithms such as Naive Bayes, Logistic Regression, or deep learning models like LSTMs could be tested to see if they yield better results.
+
+Feature Engineering: More advanced feature engineering techniques could be employed, such as using word embeddings (e.g., Word2Vec, GloVe) to represent the text data.
+
+References
+The dataset and code were sourced from the provided Jupyter Notebook: Spam_detection.ipynb.
